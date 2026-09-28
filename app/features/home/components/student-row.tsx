@@ -1,32 +1,43 @@
 import { useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
-import { useRevalidator } from "react-router";
+import {useLocation, useRevalidator} from "react-router";
 import toast from "react-hot-toast";
 import TooltipLayout from "~/components/layouts/tooltip-layout";
 import { Button } from "~/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "~/components/ui/sheet";
 import { TableCell, TableRow } from "~/components/ui/table";
-import type { User } from "~/types/api";
+import type {Bootcamp, User} from "~/types/api";
 import UpdateStudentData from "./update-student-data";
 import { deleteStudentData } from "../api/delete-student-data";
 import { getErrorMessage } from "~/lib/error";
+import {deleteStudentEnrollment} from "~/features/enrollments/api/delete-student-enrollment";
 
 interface Props {
   idx: number;
   cur: number;
   e: User;
+  bootcamp_id?:string;
 }
 
-const StudentRow = ({ idx, cur, e }: Props) => {
+const StudentRow = ({ idx, cur, e, bootcamp_id }: Props) => {
   const [editOpen, setEditOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const revalidator = useRevalidator();
+  const { pathname } = useLocation();
 
   const handleDelete = async () => {
     const toastId = toast.loading("Deleting student...");
     try {
-      await deleteStudentData(e.id);
-      toast.success("Student deleted successfully", { id: toastId });
+        const pages = pathname.split("/")[1];
+        let message = ""
+        if (pages === "bootcamps" && bootcamp_id) {
+            await deleteStudentEnrollment(bootcamp_id,e.id)
+            message = "Student removed from bootcamp"
+        } else if (pages === "home") {
+            await deleteStudentData(e.id);
+            message = "Student deleted successfully"
+        }
+      toast.success(message, { id: toastId });
       setConfirmDelete(false);
       revalidator.revalidate();
     } catch (error) {

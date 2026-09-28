@@ -125,7 +125,7 @@ const EnrollmentGrid = ({enrollments, bootcampId, onRefresh}:Props) => {
                 >
                     {filteredEnrollments.sort((a, b) => compare(a.user.nim ?? '', b.user.nim ?? '')).map(
                     (e, idx) => (
-                        <StudentRow cur={1} idx={idx} e={e.user}/>
+                        <StudentRow cur={1} idx={idx} e={e.user} bootcamp_id={bootcampId}/>
                     )
                     )}
                 </TableLayout>

@@ -12,6 +12,10 @@ import TableLayout from "~/components/layouts/table-layout"
 import { MasterDataTableHeader } from "~/components/ui/table-header"
 import { compare } from "~/lib/utils"
 import StudentRow from "~/features/home/components/student-row"
+import {DuplicateBootcamp} from "~/features/bootcamp/components/duplicate-bootcamp";
+import {Modal, type ModalType} from "~/components/modal";
+import {CreateEnrollment} from "~/features/enrollments/components/create-enrollment";
+import {Plus} from "lucide-react";
 
 interface Props {
     enrollments: Enrollment[],
@@ -28,6 +32,7 @@ const EnrollmentGrid = ({enrollments, bootcampId, onRefresh}:Props) => {
     const [progress, setProgress] = useState(0)
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [searchTerm, setSearchTerm] = useState("")
+    const [activeModal, setActiveModal] = useState<ModalType>(null)
 
     const filteredEnrollments = useMemo(() => {
         const term = searchTerm.toLowerCase()
@@ -69,8 +74,22 @@ const EnrollmentGrid = ({enrollments, bootcampId, onRefresh}:Props) => {
         reader.readAsArrayBuffer(e.target.files![0])
     }
 
+    const onSuccess = async () => {
+        setActiveModal(null);
+    };
+
     return (
         <>
+            <Modal
+                title="Add New Enrollment"
+                isOpen={activeModal === "create"}
+                onClose={() => setActiveModal(null)}
+            >
+                <CreateEnrollment
+                    bootcamp_id={bootcampId}
+                    onSuccess={onSuccess}
+                />
+            </Modal>
             <div className="flex gap-3 w-full items-center">
                 <div className="flex items-center border bg-white px-3 py-2 rounded-md flex-1 max-w-sm">
                     <CiSearch className="text-gray-500 text-xl" />
@@ -82,13 +101,21 @@ const EnrollmentGrid = ({enrollments, bootcampId, onRefresh}:Props) => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
+                <Button
+                    onClick={async () => { setActiveModal("create"); }}
+                    className="gap-2"
+                >
+                    <Plus className="h-4 w-4" />
+                    Add New Enrollment
+                </Button>
                 <Button className="bg-purple-500 hover:bg-purple-400" onClick={() => exportToExcel('enrolled-students', template)}>
                     Download Excel Template
                 </Button>
-                <label htmlFor="file" className="bg-green-600 hover:bg-green-500 px-2 rounded-md text-white text-sm font-medium flex items-center justify-center">
+                <label htmlFor="file" className="h-9 px-4 py-2 bg-green-600 hover:bg-green-500 px-2 rounded-md text-white text-sm font-medium flex items-center justify-center">
                     Import Excel
                 </label>
                 <input ref={fileInputRef} type="file" name="" id="file" hidden onChange={importStudent}/>
+
             </div>
             {progress > 0 && <Progress value={progress} className="w-full"/>}
             {

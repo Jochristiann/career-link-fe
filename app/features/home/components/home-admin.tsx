@@ -21,6 +21,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover
 import {EmploymentStatus} from "~/types/enum";
 import Dropdown from "~/components/ui/dropdown";
 import {Dock} from "lucide-react";
+import {syncStudentEnrichmentData} from "~/features/student-enrichment-data/api/sync-student-enrichment-data";
 
 interface StudentProps {
   student: User[];
@@ -188,6 +189,19 @@ const HomeAdmin = ({ student, cur, lastPage, search, major, minGpa, maxGpa, stat
     });
   };
 
+  const syncEnrichmentData = () => {
+    setLoading(true);
+    const toastId = toast.loading("Migrating enrichment data...")
+    syncStudentEnrichmentData().then(() => {
+      toast.success("Migrate success", { id: toastId })
+
+      setTimeout(() => {
+        setLoading(false);
+      }, 2000);
+
+    });
+  };
+
   const downloadAllStudents = async () => {
     setIsDownloading(true);
     const toastId = toast.loading("Fetching all student data...");
@@ -250,6 +264,13 @@ const HomeAdmin = ({ student, cur, lastPage, search, major, minGpa, maxGpa, stat
             className="flex text-accent border border-accent bg-white items-center h-12 rounded-md gap-2 p-3 hover:text-white transition duration-400"
           >
             {isLoading ? "Syncing..." : "Sync Data"}
+          </Button>
+
+          <Button
+              onClick={syncEnrichmentData}
+              className="flex text-accent border border-accent bg-white items-center h-12 rounded-md gap-2 p-3 hover:text-white transition duration-400"
+          >
+            {isLoading ? "Migrating..." : "Migrate Enrichment Data"}
           </Button>
           <Popover open={filterOpen} onOpenChange={setFilterOpen}>
             <PopoverTrigger asChild>

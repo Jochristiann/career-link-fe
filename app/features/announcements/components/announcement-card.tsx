@@ -13,6 +13,7 @@ import { getErrorMessage } from "~/lib/error";
 import {useState} from "react";
 import {useAuth} from "~/lib/auth";
 import {createAnnouncementApply} from "~/features/announcements/api/create-announcement-apply";
+import {format} from "date-fns";
 
 interface AnnouncementCardProps {
   announcement: Announcement;
@@ -53,7 +54,7 @@ export const AnnouncementCard = ({ announcement, onSelect, initialApplied = fals
               {role !== "admin" && (
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Calendar className="h-3 w-3" />
-                  {announcement.created_at}
+                  {format(announcement.created_at,"MMMM dd, yyyy")}
                 </div>
               )}
             </div>
@@ -108,7 +109,7 @@ export const AnnouncementCard = ({ announcement, onSelect, initialApplied = fals
           <div className="flex items-center justify-between pt-3 border-t border-border/50">
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <Calendar className="h-3 w-3" />
-              Created {announcement.created_at}
+              Created {format(announcement.created_at,"MMMM dd, yyyy")}
             </div>
             <Badge variant="secondary" className="text-xs">
               Published

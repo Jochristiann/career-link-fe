@@ -25,9 +25,7 @@ export const clientLoader = async ({ request }: { request: Request }) => {
 
 export default function Home({ loaderData }: Route.ComponentProps) {
 
-  const { role } = useRole();
   const { user } = useAuth();
-  const navigate = useNavigate()
 
 
   const { url } = loaderData

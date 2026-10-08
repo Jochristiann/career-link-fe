@@ -9,18 +9,22 @@ import { Button } from "~/components/ui/button";
 import type { User } from "~/types/api";
 import {EmploymentStatus} from "~/types/enum";
 import Dropdown from "~/components/ui/dropdown";
-
-interface Props {
-  onSuccess: () => void;
-  user: User;
-}
+import {
+    updateStudentEnrichmentData,
+    type UpdateStudentEnrichmentDataInput, updateStudentEnrichmentDataInputSchema
+} from "~/features/student-enrichment-data/api/update-student-enrichment-data";
+import {useState} from "react";
 
 const UpdateStudentData = ({user,onSuccess}:Props) => {
     const statusValues = Object.values(EmploymentStatus).map((val) => ({
         value: val,
         text: val,
     }));
-    const form = useForm<UpdateStudentDataInput>({
+
+    const [selectedBatch, setSelectedBatch] = useState<number | null>(null);
+    const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null)
+
+    const studentForm = useForm<UpdateStudentDataInput>({
         resolver: zodResolver(updateStudentInputSchema),
         defaultValues: {
             email: user.email,
@@ -37,64 +41,175 @@ const UpdateStudentData = ({user,onSuccess}:Props) => {
             business_type: user.business_type ?? "",
             university_name: user.university_name ?? ""
         },
-      });
+    });
 
-      const watchedStatus = form.watch("status");
-    
-      const onSubmit = async (data: UpdateStudentDataInput) => {
-        const toastId = toast.loading("Updating future plan...");
-    
-        try {
-          const res = await updateStudentData({data, id: user.id})
-          toast.success(res.message, { id: toastId });
-    
-          form.reset();
-    
-          onSuccess();
-        } catch (error) {
-          toast.error(getErrorMessage(error), {
-            id: toastId,
-          });
+    const studentEnrichmentDataForm= useForm<UpdateStudentEnrichmentDataInput>({
+        resolver: zodResolver(updateStudentEnrichmentDataInputSchema),
+        defaultValues: {
+            company: "",
+            position: "",
+        },
+    });
+
+    const watchedStatus = studentForm.watch("status");
+
+    const selectEnrichmentBatch = (batch: number) => {
+        setSelectedBatch(batch);
+
+        const enrichment = user.student_enrichment_data?.find(
+            (data) => data.enrichment_batch === batch
+        );
+        if (enrichment) {
+            setSelectedRequestId(enrichment.id)
+        }else{
+            setSelectedRequestId(null);
         }
-      };
 
-      const positionLabel = watchedStatus === EmploymentStatus.EMPLOYED ? "Position" : "Future Position";
-      const positionPlaceholder = watchedStatus === EmploymentStatus.ENTREPRENEUR
-          ? "e.g. CEO, Founder, Business Owner"
-          : "e.g. Software Engineer, Data Analyst";
+        studentEnrichmentDataForm.reset({
+            company: enrichment?.company ?? "",
+            position: enrichment?.position ?? "",
+        });
+    };
+
+    const onSubmit = async (data: UpdateStudentDataInput) => {
+        const toastId = toast.loading("Updating future plan...");
+
+        try {
+            const res = await updateStudentData({data, id: user.id})
+            toast.success(res.message, { id: toastId });
+
+            studentForm.reset();
+
+            onSuccess();
+        } catch (error) {
+            toast.error(getErrorMessage(error), {
+                id: toastId,
+            });
+        }
+    };
+
+    const onSubmitStudentEnrichmentData = async (data: UpdateStudentEnrichmentDataInput) => {
+        const toastId = toast.loading("Updating student enrichment data...");
+
+        if(!selectedBatch || !selectedRequestId){
+            toast.error(getErrorMessage(new Error("Enrichment data must be chosen")), {
+                id: toastId,
+            });
+            return
+        }
+
+        try {
+            const res = await updateStudentEnrichmentData({data, id: selectedRequestId})
+            toast.success(res.message, { id: toastId });
+
+            studentEnrichmentDataForm.reset();
+
+            onSuccess();
+        } catch (error) {
+            toast.error(getErrorMessage(error), {
+                id: toastId,
+            });
+        }
+    };
+
+    const positionLabel = watchedStatus === EmploymentStatus.EMPLOYED ? "Position" : "Future Position";
+    const positionPlaceholder = watchedStatus === EmploymentStatus.ENTREPRENEUR
+        ? "e.g. CEO, Founder, Business Owner"
+        : "e.g. Software Engineer, Data Analyst";
 
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <Field control={form.control} placeholder="Enter GPA" label="GPA" type="number" name="gpa" step="0.01"/>
-            <Dropdown control={form.control} label="Employment Status" name="status" values={statusValues}/>
-            <Field control={form.control} placeholder={positionPlaceholder} label={positionLabel} type="text" name="future_position"/>
-            {watchedStatus === EmploymentStatus.EMPLOYED && (
-                <Field control={form.control} placeholder="e.g. Google, Tokopedia, BCA" label="Company Name" type="text" name="company_name"/>
-            )}
-            {watchedStatus === EmploymentStatus.ENTREPRENEUR && (
-                <Field control={form.control} placeholder="e.g. F&B, E-Commerce, SaaS, Consulting" label="Business Type" type="text" name="business_type"/>
-            )}
-            {watchedStatus === EmploymentStatus.STUDY && (
-                <Field control={form.control} placeholder="e.g. Universitas Indonesia, NUS, MIT" label="University / Institution" type="text" name="university_name"/>
-            )}
-            <Field control={form.control} placeholder="Enter here (separated by comma) ex: C,C++" label="Skill" type="text" name="skill"/>
-            <Field control={form.control} placeholder="Enter Major" label="Major" type="text" name="major" />
-            <Field control={form.control} placeholder="Enter CV Link" label="CV Link" type="text" name="cv" />
-            <div className="flex justify-end">
-                <Button
-                    type="submit"
-                    disabled={form.formState.isSubmitting}
-                    className={
-                        form.formState.isSubmitting ? "opacity-70 cursor-not-allowed" : ""
-                    }
-                >
-                {form.formState.isSubmitting ? "Updating..." : "Update"}
-                </Button>
+        <div className={"flex flex-col gap-5"}>
+            <Form {...studentForm}>
+                <form onSubmit={studentForm.handleSubmit(onSubmit)} className="space-y-4">
+                    <Field control={studentForm.control} placeholder="Enter GPA" label="GPA" type="number" name="gpa"
+                           step="0.01"/>
+                    <Dropdown control={studentForm.control} label="Employment Status" name="status"
+                              values={statusValues}/>
+                    <Field control={studentForm.control} placeholder={positionPlaceholder} label={positionLabel}
+                           type="text" name="future_position"/>
+                    {watchedStatus === EmploymentStatus.EMPLOYED && (
+                        <Field control={studentForm.control} placeholder="e.g. Google, Tokopedia, BCA"
+                               label="Company Name" type="text" name="company_name"/>
+                    )}
+                    {watchedStatus === EmploymentStatus.ENTREPRENEUR && (
+                        <Field control={studentForm.control} placeholder="e.g. F&B, E-Commerce, SaaS, Consulting"
+                               label="Business Type" type="text" name="business_type"/>
+                    )}
+                    {watchedStatus === EmploymentStatus.STUDY && (
+                        <Field control={studentForm.control} placeholder="e.g. Universitas Indonesia, NUS, MIT"
+                               label="University / Institution" type="text" name="university_name"/>
+                    )}
+                    <Field control={studentForm.control} placeholder="Enter here (separated by comma) ex: C,C++"
+                           label="Skill" type="text" name="skill"/>
+                    <Field control={studentForm.control} placeholder="Enter Major" label="Major" type="text"
+                           name="major"/>
+                    <Field control={studentForm.control} placeholder="Enter CV Link" label="CV Link" type="text"
+                           name="cv"/>
+                    <div className="flex justify-end">
+                        <Button
+                            type="submit"
+                            disabled={studentForm.formState.isSubmitting}
+                            className={
+                                studentForm.formState.isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+                            }
+                        >
+                            {studentForm.formState.isSubmitting ? "Updating..." : "Update"}
+                        </Button>
+                    </div>
+                </form>
+            </Form>
+
+            <div className="flex gap-2">
+                {user.student_enrichment_data?.map((enrichment) => (
+                    <Button
+                        key={enrichment.enrichment_batch}
+                        type="button"
+                        onClick={() =>
+                            selectEnrichmentBatch(enrichment.enrichment_batch)
+                        }
+                    >
+                        Batch {enrichment.enrichment_batch}
+                    </Button>
+                ))}
             </div>
-            </form>
-        </Form>
+
+            <Form {...studentEnrichmentDataForm}>
+                <form onSubmit={studentEnrichmentDataForm.handleSubmit(onSubmitStudentEnrichmentData)}
+                      className="space-y-4">
+
+                    <p className={"text-sm"}>Chosen Batch: {selectedBatch ? selectedBatch : "No batch selected"}</p>
+                    <Field
+                        control={studentEnrichmentDataForm.control}
+                        label="Company"
+                        placeholder="Enter company"
+                        type="text"
+                        name="company"
+                    />
+
+                    <Field
+                        control={studentEnrichmentDataForm.control}
+                        label="Position"
+                        placeholder="Enter position"
+                        type="text"
+                        name="position"
+                    />
+                    <div className="flex justify-end">
+                        <Button type="submit">
+                            Update Student Enrichment Data
+                        </Button>
+                    </div>
+
+                </form>
+            </Form>
+        </div>
+
+
     )
+}
+
+interface Props {
+    onSuccess: () => void;
+    user: User;
 }
 
 export default UpdateStudentData

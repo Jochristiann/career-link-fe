@@ -43,7 +43,7 @@ export const CreateBootcamp = ({
       type_id: "",
       speaker_id: "",
       about_this_bootcamp: "",
-      batch: 1,
+      batch: "1",
     },
   });
 
@@ -116,7 +116,6 @@ export const CreateBootcamp = ({
             <Field
                 control={form.control}
                 placeholder="Enter Batch"
-                minValue = {1}
                 label="Bootcamp Batch"
                 type="number"
                 name="batch"

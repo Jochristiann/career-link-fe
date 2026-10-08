@@ -4,9 +4,13 @@ import type {Bootcamp} from "~/types/api";
 
 export const duplicateBootcampInputSchema = z.object({
   bootcamp_id: z.string().min(1, "Name is required"),
-  batch: z.string().refine((val) => !Number.isNaN(parseInt(val, 10)), {
-    message: "Expected number, received a string"
-  }),
+  batch: z.string()
+      .refine((val) => {
+        const number = parseInt(val, 10)
+        return !Number.isNaN(number) && number >= 1
+      }, {
+        message: "Batch must be a number greater than or equal to 1"
+      }),
     short_name: z.string().min(1, "Short name is required"),
 });
 

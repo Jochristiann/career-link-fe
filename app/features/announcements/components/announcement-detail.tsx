@@ -24,6 +24,7 @@ import {createAnnouncementApply} from "~/features/announcements/api/create-annou
 import {getUserApplied} from "~/features/announcements/api/get-user-applied";
 import {useNavigate} from "react-router";
 import {EmploymentStatus} from "~/types/enum";
+import {format} from "date-fns";
 
 interface Props {
   announcement: Announcement;
@@ -300,7 +301,7 @@ export const AnnouncementDetail = ({ announcement }: Props) => {
               <AnnouncementTag type={announcement.type}/>
               <Badge variant="outline" className="flex items-center gap-1.5">
                 <CalendarDays className="h-3 w-3"/>
-                {announcement.created_at}
+                {format(announcement.created_at,"MMMM dd, yyyy")}
               </Badge>
             </div>
           </CardHeader>

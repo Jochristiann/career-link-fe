@@ -22,7 +22,7 @@ const CreateAssignment = ( {sessionId, assignment, onSuccess}:Props ) => {
             session_id: sessionId,
             answer_file_path:  assignment? assignment.answer_file_path : "",
             question_file_path: assignment? assignment.question_file_path :  "",
-            is_shared:  assignment? assignment.is_shared : false,
+            is_shared:  assignment? Boolean(assignment.is_shared) : false,
             open_date: assignment? new Date(assignment.open_date) : new Date(),
             close_date:  assignment? new Date(assignment.close_date) : new Date(),
         },
@@ -63,6 +63,7 @@ const CreateAssignment = ( {sessionId, assignment, onSuccess}:Props ) => {
   
       form.setValue(realName, newDate);
     }
+
     return (
         <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

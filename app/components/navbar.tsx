@@ -12,7 +12,9 @@ export default function Navbar() {
   const revalidator = useRevalidator();
 
   const navLinks = [
-    { label: "Home", to: "home" },
+    { label: "Home",
+      to: "home",
+    },
     { label: "Announcements", to: "announcements" },
     { label: "Bootcamps", to: "bootcamps", userOnly: true },
     {
@@ -29,6 +31,11 @@ export default function Navbar() {
       label: "Certificates",
       to: "certificates",
       userOnly: true
+    },
+    {
+      label: "Request",
+      to: "admin/requests",
+      adminOnly: true
     },
   ];
 

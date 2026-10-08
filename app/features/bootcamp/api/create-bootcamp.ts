@@ -24,7 +24,12 @@ export const createBootcampInputSchema = z.object({
       { message: "Invalid image file type" }
     )
     .optional(),
-    batch: z.number().min(1, "Batch is required"),
+    batch: z.string().refine((val) => {
+      const number = parseInt(val, 10)
+      return !Number.isNaN(number) && number >= 1
+    }, {
+      message: "Batch must be a number greater than or equal to 1"
+    }),
 });
 
 export type CreateBootcampInput = z.infer<typeof createBootcampInputSchema>;

@@ -172,7 +172,6 @@ export const DuplicateBootcamp = ({
         <Field
             control={form.control}
             placeholder="Enter Batch"
-            minValue = {1}
             label="Bootcamp Batch"
             type="number"
             name="batch"

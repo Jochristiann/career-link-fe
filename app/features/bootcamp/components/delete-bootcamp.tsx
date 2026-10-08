@@ -37,7 +37,7 @@ export const DeleteBootcamp = ({
   return (
     <div className="flex flex-col gap-5">
       <p>
-        Are you sure you want to delete bootcamp <strong>{selectedCategory.name}</strong>{" "}?
+        Are you sure you want to delete bootcamp <strong>Batch {selectedCategory.batch} - {selectedCategory.name}</strong>{" "}?
       </p>
       <div className="flex justify-end gap-2">
         <Button onClick={onClose} variant="outline" disabled={isLoading}>

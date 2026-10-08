@@ -1,5 +1,4 @@
 import { EnrichmentTrack } from "~/components/home/enrichment-track";
-import { MdEdit } from "react-icons/md";
 import { useRole } from "~/provider/role-testing-provider";
 import FuturePlan from "./future-plan";
 import { useEffect, useState } from "react";
@@ -13,6 +12,9 @@ import { Separator } from "~/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { useAuth } from "~/lib/auth";
 import {EmploymentStatus} from "~/types/enum";
+import CreateChangeDataRequest from "~/features/student-enrichment-data/component/create-change_data_request";
+import {MdEdit} from "react-icons/md";
+import {en} from "zod/v4/locales";
 
 export const HomeProfileCard = () => {
   const { user, fetchUser } = useAuth();
@@ -49,6 +51,23 @@ export const HomeProfileCard = () => {
     }
   }, [user]);
 
+    const getOrdinal = (number: number) => {
+        if (number % 100 >= 11 && number % 100 <= 13) {
+            return `${number}th`;
+        }
+
+        switch (number % 10) {
+            case 1:
+                return `${number}st`;
+            case 2:
+                return `${number}nd`;
+            case 3:
+                return `${number}rd`;
+            default:
+                return `${number}th`;
+        }
+    };
+
   return (
     <div className="w-full mx-auto p-6 space-y-8">
       <Modal
@@ -79,6 +98,14 @@ export const HomeProfileCard = () => {
         <UpdatePassword user={user!} onSuccess={onSuccess} />
       </Modal>
 
+    <Modal
+        title={"Request Change Enrichment Data"}
+        isOpen={activeModal === "request"}
+        onClose={() => {setActiveModal(null)}}
+    >
+        <CreateChangeDataRequest onSuccess={onSuccess}/>
+    </Modal>
+
       <Card className="overflow-hidden">
         <CardContent className="p-8">
           <div className="flex flex-col lg:flex-row gap-8 items-start lg:items-center">
@@ -94,7 +121,7 @@ export const HomeProfileCard = () => {
                   <div className="text-center lg:text-left">
                       <h1 className="text-4xl font-bold text-primary mb-2">
                           {user?.name}
-               `       </h1>
+                      </h1>
                       <p className="text-xl text-muted-foreground">{user?.nim}</p>
                       <p className="text-large text-muted-foreground">GPA: {user?.gpa}</p>
                   </div>
@@ -130,56 +157,45 @@ export const HomeProfileCard = () => {
               <h2 className="text-3xl font-bold text-primary">
                 My Experiences
               </h2>
-              {/* {role === "user" && (
-                <Button>
-                  <IoMdAdd className="w-6 h-6" />
-                  Add Experience
+              {role && role === "user" && (
+                <Button onClick={() => setActiveModal("request")}>
+                  <MdEdit className="w-5 h-5"/>
+                  Request New / Change
                 </Button>
-              )} */}
+              )}
             </div>
             <Card>
               <CardContent className="space-y-8">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-2xl font-semibold text-primary mb-2">
-                        1st Semester
-                      </h3>
-                      <Badge variant="secondary" className="mb-3">
-                        {user?.enrichment_track}
-                      </Badge>
-                      <p className="text-xl font-medium mb-2">
-                        {user?.partner} - {user?.current_position}
-                      </p>
-                    </div>
-                    {/* <Button variant="ghost" size="icon">
-                      <MdEdit className="w-5 h-5" />
-                    </Button> */}
-                  </div>
-                </div>
+                  {user?.student_enrichment_data &&  user?.student_enrichment_data.length != 0? (
+                      <>
+                          {user.student_enrichment_data.map((enrichment,idx) => (
+                              <>
+                                  <div className="space-y-4">
+                                      <div className="flex justify-between items-start">
+                                          <div>
+                                              <h3 className="text-2xl font-semibold text-primary mb-2">
+                                                  {getOrdinal(enrichment.enrichment_batch)} Semester
+                                              </h3>
+                                              <Badge variant="secondary" className="mb-3">
+                                                  {user?.enrichment_track}
+                                              </Badge>
+                                              <p className="text-xl font-medium mb-2">
+                                                  {enrichment.company} - {enrichment.position}
+                                              </p>
+                                          </div>
+                                      </div>
+                                  </div>
 
-                <Separator />
+                                  {idx !== user.student_enrichment_data.length - 1 && (
+                                      <Separator />
+                                  )}
+                              </>
+                          ))}
+                      </>
+                  ) : (
+                      <p>No Enrichment Data yet.</p>
 
-                {user?.duration?.startsWith("12") && (
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-2xl font-semibold text-primary mb-2">
-                          2nd Semester
-                        </h3>
-                        <Badge variant="secondary" className="mb-3">
-                          {user.enrichment_track}
-                        </Badge>
-                        <p className="text-xl font-medium mb-2">
-                          {user.partner} - {user.current_position}
-                        </p>
-                      </div>
-                      {/* <Button variant="ghost" size="icon">
-                        <MdEdit className="w-5 h-5" />
-                      </Button> */}
-                    </div>
-                  </div>
-                )}
+                  )}
               </CardContent>
             </Card>
           </>

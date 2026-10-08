@@ -7,6 +7,12 @@ export enum TestType {
     POST_TEST= 'post_test'
 }
 
+export enum ChangeDataRequestType {
+    WAITING= 'waiting',
+    APPROVED= 'approved',
+    REJECTED= 'rejected',
+}
+
 export enum AssignmentResultType {
     NO_FILE= 'no file',
     AVERAGE= 'average',

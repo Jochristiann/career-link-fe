@@ -19,6 +19,7 @@ export type User = {
   future_position: string;
   skill: string;
   student_attempts: StudentAttempt[];
+  student_enrichment_data: StudentEnrichmentData[];
   session_attendances: Attendance[];
   session_assignment_results: AssignmentResult[];
   partner: string;
@@ -31,6 +32,25 @@ export type User = {
   business_type?: string;
   university_name?: string;
 };
+
+export type StudentEnrichmentData = {
+  id:string;
+  company:string;
+  position:string;
+  enrichment_batch:number;
+}
+
+export type ChangeDataRequest = {
+  id:string;
+  user_id:string;
+  user:User;
+  new_company:string;
+  new_position:string;
+  enrichment_batch:number;
+  approval_status: string;
+  created_at: string;
+  updated_at: string|null;
+}
 
 export type Announcement = {
   id: string;
